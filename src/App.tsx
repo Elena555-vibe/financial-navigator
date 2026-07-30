@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import './sheet.css'
+import './mvp-layout.css'
 import { actualExpenses, actualIncome, availableMoney, envelopeBalance, planStatus, plannedEverydayMoney, protectedMoney, rub, toKopecks, unallocatedMoney } from './lib/finance'
 import type { Account, Envelope, EnvelopeKind, Obligation, Operation, PayPeriod } from './lib/types'
 
