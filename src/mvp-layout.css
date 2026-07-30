@@ -89,6 +89,21 @@
 
 .plan-item > span:last-child { justify-items: end; text-align: right; }
 .plan-item .text-button { min-height: 44px; padding: 4px 0; }
+.item-actions,
+.operation-actions {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
+
+.danger { color: #52604e; }
+
+.hero-grid small {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 15px;
+}
 .wide { width: 100%; }
 
 /* iOS enlarges pages when a focused input uses a font smaller than 16 px. */
