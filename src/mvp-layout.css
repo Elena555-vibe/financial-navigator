@@ -91,6 +91,12 @@
 .plan-item .text-button { min-height: 44px; padding: 4px 0; }
 .wide { width: 100%; }
 
+/* iOS enlarges pages when a focused input uses a font smaller than 16 px. */
+.sheet input,
+.sheet select {
+  font-size: 16px;
+}
+
 @media (min-width: 768px) {
   .sheet-backdrop {
     align-items: center;
