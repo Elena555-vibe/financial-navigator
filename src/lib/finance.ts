@@ -1,4 +1,4 @@
-import type { Account, Category, Goal, Loan, Obligation, Operation } from './types'
+import type { Account, Category, Envelope, Goal, Loan, Obligation, Operation } from './types'
 export const rub = (kopecks:number) => new Intl.NumberFormat('ru-RU',{style:'currency',currency:'RUB',minimumFractionDigits:0,maximumFractionDigits:2}).format(kopecks/100)
 export const toKopecks = (value:string) => Math.round(Number(value.replace(',','.').replace(/\s/g,''))*100)
 export const monthKey = (date = new Date()) => date.toISOString().slice(0,7)
@@ -16,3 +16,19 @@ export function budgetRows(categories:Category[],ops:Operation[], month=monthKey
 export function goalMonths(goal:Goal) { if(!goal.monthlyKopecks||goal.monthlyKopecks<=0)return null; return Math.ceil(Math.max(0,goal.targetKopecks-goal.balanceKopecks)/goal.monthlyKopecks) }
 export function recommendedSaving(incomeKopecks:number,percent=10) { return Math.round(incomeKopecks*percent/100) }
 export function earlyRepayment(loan:Loan,extraKopecks:number) { const monthlyRate=loan.annualRatePercent/100/12; const payment=loan.paymentKopecks; const balance=Math.max(0,loan.balanceKopecks-extraKopecks); if(!monthlyRate||payment<=balance*monthlyRate)return {months:null,interestKopecks:null}; const months=Math.ceil(Math.log(payment/(payment-balance*monthlyRate))/Math.log(1+monthlyRate)); return {months,interestKopecks:Math.round(payment*months-balance)} }
+export function envelopeBalance(envelopes:Envelope[], kind:Envelope['kind']) { return envelopes.filter(e=>e.kind===kind).reduce((sum,e)=>sum+e.balanceKopecks,0) }
+export function protectedMoney(envelopes:Envelope[]) { return envelopeBalance(envelopes,'required')+envelopeBalance(envelopes,'reserve')+envelopeBalance(envelopes,'debt') }
+export function plannedEverydayMoney(envelopes:Envelope[]) { return envelopeBalance(envelopes,'living')+envelopeBalance(envelopes,'flexible') }
+export function unallocatedMoney(accounts:Account[], envelopes:Envelope[]) { return availableMoney(accounts)-envelopes.reduce((sum,e)=>sum+e.balanceKopecks,0) }
+export function planStatus(accounts:Account[], envelopes:Envelope[], obligations:Obligation[], startsOn?:string, endsOn?:string) {
+ const required= envelopeBalance(envelopes,'required')
+ const debt= envelopeBalance(envelopes,'debt')
+ const dueItems=obligations.filter(o=>!o.paid&&(startsOn&&endsOn?o.dueDate>=startsOn&&o.dueDate<endsOn:isInMonth(o.dueDate)))
+ const billDue=dueItems.filter(o=>o.kind==='bill').reduce((sum,o)=>sum+o.amountKopecks,0)
+ const debtDue=dueItems.filter(o=>o.kind==='loan').reduce((sum,o)=>sum+o.amountKopecks,0)
+ const due=billDue+debtDue
+ const obligationGap=Math.max(0,billDue-required)+Math.max(0,debtDue-debt)
+ const allocationGap=Math.max(0,-unallocatedMoney(accounts,envelopes))
+ const gap=Math.max(obligationGap,allocationGap)
+ return { dueKopecks:due, requiredKopecks:required, debtKopecks:debt, billDueKopecks:billDue, debtDueKopecks:debtDue, gapKopecks:gap, isReady:Boolean(startsOn&&endsOn)&&gap===0 }
+}
