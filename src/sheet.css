@@ -1,0 +1,6 @@
+@media (min-width: 768px) {
+  .sheet {
+    margin: 0 auto;
+    max-width: 760px;
+  }
+}
